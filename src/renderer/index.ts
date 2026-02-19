@@ -1,7 +1,7 @@
 import type { ChartRequest, OutputFormat } from "../schemas/chart-config.js";
 import { buildHTML, loadClientBundle } from "./html-template.js";
 import { acquirePage, releasePage, initBrowserPool, destroyBrowserPool } from "./browser-pool.js";
-import { svgToPng } from "./resvg.js";
+
 import type { AppConfig } from "../config.js";
 
 export interface RenderResult {
@@ -65,31 +65,18 @@ export async function renderChart(request: ChartRequest): Promise<RenderResult> 
         })
       );
     } else {
-      // PNG — try to extract SVG and use resvg for sharper output
-      try {
-        const svgContent = await page.evaluate(() => {
-          const svg = document.querySelector(".recharts-wrapper svg");
-          if (!svg) throw new Error("No SVG element found");
-          // Clone and add background
-          const clone = svg.cloneNode(true) as SVGElement;
-          clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-          return clone.outerHTML;
-        });
-        data = svgToPng(svgContent, request.width * 2);
-      } catch {
-        // Fallback to Puppeteer screenshot
-        const screenshot = await page.screenshot({
-          type: "png",
-          clip: {
-            x: 0,
-            y: 0,
-            width: request.width,
-            height: request.height,
-          },
-          omitBackground: !request.background,
-        });
-        data = Buffer.from(screenshot);
-      }
+      // PNG — use Puppeteer screenshot to capture full page including
+      // HTML elements (titles, descriptions), backgrounds, and CSS colors
+      const screenshot = await page.screenshot({
+        type: "png",
+        clip: {
+          x: 0,
+          y: 0,
+          width: request.width,
+          height: request.height,
+        },
+      });
+      data = Buffer.from(screenshot);
     }
 
     return {

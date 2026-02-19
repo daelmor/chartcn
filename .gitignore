@@ -2,3 +2,7 @@ node_modules/
 dist/
 .env
 *.tsbuildinfo
+
+# Visual QA output (keep golden images tracked)
+test-output/
+!test-output/golden/

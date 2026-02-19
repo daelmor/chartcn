@@ -39,7 +39,7 @@ export function PieChartComponent({ config, width, height, theme }: Props) {
           dataKey={dataKey}
           nameKey={nameKey}
           cx="50%"
-          cy="50%"
+          cy="45%"
           outerRadius={outerRadius}
           innerRadius={innerRadius}
           label={showLabels ? ({ name, percent }: { name: string; percent: number }) =>
@@ -52,7 +52,7 @@ export function PieChartComponent({ config, width, height, theme }: Props) {
           ))}
         </Pie>
         {config.tooltip !== false && <Tooltip />}
-        {config.legend && <Legend />}
+        {config.legend && <Legend wrapperStyle={{ paddingTop: "8px" }} />}
       </PieChart>
     </ChartWrapper>
   );

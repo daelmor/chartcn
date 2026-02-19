@@ -1,8 +1,8 @@
 ---
 name: recharts
 description: Use when working on chart components, adding chart types, modifying chart rendering, or changing the chart config schema. Provides Recharts API reference and project-specific patterns.
-user-invocable: true
-argument-hint: [component or task description]
+user-invokable: true
+argument-hint: component or task description
 ---
 
 # Recharts Reference for chartcn

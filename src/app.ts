@@ -48,7 +48,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(previewRoute);
 
   // Global error handler
-  app.setErrorHandler((error, _request, reply) => {
+  app.setErrorHandler((error: Error & { validation?: unknown }, _request, reply) => {
     app.log.error(error);
 
     if (error.validation) {

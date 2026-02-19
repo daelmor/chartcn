@@ -1,4 +1,4 @@
-import type { ChartConfig, SeriesConfig, Theme } from "../schemas/chart-config.js";
+import type { ChartConfig, Theme } from "../schemas/chart-config.js";
 import { resolveColor } from "./theme.js";
 
 export interface ResolvedSeries {

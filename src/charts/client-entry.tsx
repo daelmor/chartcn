@@ -3,7 +3,6 @@
  * This runs inside Puppeteer to render charts in the browser.
  * The chart config is injected as window.__CHART_CONFIG__ by the HTML template.
  */
-import React from "react";
 import ReactDOM from "react-dom/client";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
@@ -99,7 +98,7 @@ function ChartHeader({ config }: { config: Record<string, unknown> }) {
   return (
     <div className="chart-header">
       <div className="chart-title">{config.title as string}</div>
-      {config.description && <div className="chart-description">{config.description as string}</div>}
+      {config.description ? <div className="chart-description">{String(config.description)}</div> : null}
     </div>
   );
 }

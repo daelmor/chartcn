@@ -1,4 +1,3 @@
-import React from "react";
 import {
   LineChart,
   Line,
@@ -7,7 +6,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
 import type { ChartConfig, Theme } from "../../schemas/chart-config.js";
 import { resolveSeries, getCurveType } from "../utils.js";

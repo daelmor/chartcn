@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import type { AppConfig } from "./config.js";
 import { createImageCache, createConfigStore } from "./cache/lru-cache.js";
+import { AzureBlobStore, type BlobStore } from "./storage/blob-store.js";
 import { healthRoute } from "./routes/health.js";
 import { chartRoute } from "./routes/chart.js";
 import { chartSaveRoute } from "./routes/chart-save.js";
@@ -34,6 +35,20 @@ export async function buildApp(config: AppConfig) {
   const imageCache = createImageCache(config.CACHE_MAX_SIZE, config.CACHE_TTL_SECONDS);
   const configStore = createConfigStore(config.CACHE_MAX_SIZE, config.CACHE_TTL_SECONDS);
 
+  // Conditionally create blob store
+  let blobStore: BlobStore | undefined;
+  if (config.storageEnabled) {
+    const store = new AzureBlobStore(
+      config.AZURE_STORAGE_ACCOUNT_NAME,
+      config.AZURE_STORAGE_CONNECTION_STRING
+    );
+    await store.init();
+    blobStore = store;
+    app.log.info("Azure Blob Storage enabled");
+  } else {
+    app.log.info("Azure Blob Storage not configured — using memory-only storage");
+  }
+
   // Initialize renderer
   await initRenderer(config);
 
@@ -43,8 +58,9 @@ export async function buildApp(config: AppConfig) {
   await app.register(chartSaveRoute, {
     configStore,
     ttlSeconds: config.CACHE_TTL_SECONDS,
+    blobStore,
   });
-  await app.register(chartRenderRoute, { configStore, imageCache });
+  await app.register(chartRenderRoute, { configStore, imageCache, blobStore });
   await app.register(previewRoute);
 
   // Global error handler

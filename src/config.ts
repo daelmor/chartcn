@@ -10,10 +10,18 @@ const envSchema = z.object({
   LOG_LEVEL: z.string().default("info"),
   RATE_LIMIT_RPM: z.coerce.number().default(60),
   CHROMIUM_PATH: z.string().optional(),
+  AZURE_STORAGE_ACCOUNT_NAME: z.string().optional(),
+  AZURE_STORAGE_CONNECTION_STRING: z.string().optional(),
 });
 
-export type AppConfig = z.infer<typeof envSchema>;
+export type AppConfig = z.infer<typeof envSchema> & {
+  storageEnabled: boolean;
+};
 
 export function loadConfig(): AppConfig {
-  return envSchema.parse(process.env);
+  const env = envSchema.parse(process.env);
+  return {
+    ...env,
+    storageEnabled: !!(env.AZURE_STORAGE_ACCOUNT_NAME || env.AZURE_STORAGE_CONNECTION_STRING),
+  };
 }

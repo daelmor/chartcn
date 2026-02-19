@@ -1,23 +1,46 @@
 import puppeteer, { type Browser, type Page } from "puppeteer-core";
 import genericPool from "generic-pool";
+import { existsSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import { homedir } from "node:os";
 import type { AppConfig } from "../config.js";
 
 let browser: Browser | null = null;
 let pagePool: genericPool.Pool<Page> | null = null;
 
+function findPuppeteerChrome(): string | undefined {
+  // npx puppeteer browsers install chrome puts it under ~/.cache/puppeteer/chrome/
+  const cacheDir = join(homedir(), ".cache", "puppeteer", "chrome");
+  try {
+    const versions = readdirSync(cacheDir);
+    for (const ver of versions.sort().reverse()) {
+      const candidates = [
+        join(cacheDir, ver, "chrome-linux64", "chrome"),
+        join(cacheDir, ver, "chrome-linux", "chrome"),
+      ];
+      for (const c of candidates) {
+        if (existsSync(c)) return c;
+      }
+    }
+  } catch {
+    // directory doesn't exist
+  }
+  return undefined;
+}
+
 function findChromiumPath(): string {
-  // Check common locations
   const candidates = [
     process.env.CHROMIUM_PATH,
-    "/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome",
     "/usr/bin/chromium-browser",
     "/usr/bin/chromium",
     "/usr/bin/google-chrome-stable",
     "/usr/bin/google-chrome",
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    findPuppeteerChrome(),
   ];
 
-  for (const path of candidates) {
-    if (path) return path;
+  for (const p of candidates) {
+    if (p && existsSync(p)) return p;
   }
 
   throw new Error(

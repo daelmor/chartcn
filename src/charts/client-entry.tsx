@@ -135,7 +135,7 @@ function RenderChart() {
             {series.map(s => (
               <Line key={s.key} type={curveType} dataKey={s.key} name={s.label}
                 stroke={s.color} strokeWidth={s.strokeWidth} strokeDasharray={s.strokeDash}
-                dot={false} activeDot={{ r: 4 }} />
+                dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
             ))}
           </LineChart>
         )}
@@ -159,7 +159,7 @@ function RenderChart() {
                 stroke={s.color} strokeWidth={s.strokeWidth}
                 fill={s.fill !== false ? `url(#gradient-${s.key})` : "none"}
                 fillOpacity={1}
-                stackId={config.stacked ? "stack" : undefined} />
+                stackId={config.stacked ? "stack" : undefined} isAnimationActive={false} />
             ))}
           </AreaChart>
         )}
@@ -185,7 +185,7 @@ function RenderChart() {
               {series.map(s => (
                 <Bar key={s.key} dataKey={s.key} name={s.label} fill={s.color}
                   radius={[s.radius, s.radius, 0, 0]}
-                  stackId={config.stacked ? "stack" : undefined} />
+                  stackId={config.stacked ? "stack" : undefined} isAnimationActive={false} />
               ))}
             </BarChart>
           );
@@ -204,7 +204,7 @@ function RenderChart() {
                 cx="50%" cy="50%" outerRadius={outerRadius} innerRadius={innerRad}
                 label={showLabels ? ({ name, percent }: { name: string; percent: number }) =>
                   `${name} ${(percent * 100).toFixed(0)}%` : undefined}
-                labelLine={showLabels}>
+                labelLine={showLabels} isAnimationActive={false}>
                 {data.map((_, i) => <Cell key={i} fill={colors[i]} />)}
               </Pie>
               {showTooltip && <Tooltip />}
@@ -226,7 +226,7 @@ function RenderChart() {
               {series.map(s => (
                 <Radar key={s.key} name={s.label} dataKey={s.key} stroke={s.color}
                   fill={isFilled ? s.color : "none"} fillOpacity={isFilled ? 0.3 : 0}
-                  strokeWidth={s.strokeWidth} />
+                  strokeWidth={s.strokeWidth} isAnimationActive={false} />
               ))}
             </RadarChart>
           );
@@ -244,7 +244,7 @@ function RenderChart() {
             <RadialBarChart data={coloredData} width={chartWidth} height={chartHeight}
               cx="50%" cy="50%" innerRadius={innerRad} outerRadius="80%"
               barSize={20} startAngle={startAngle} endAngle={endAngle}>
-              <RadialBar dataKey={dataKey} background
+              <RadialBar dataKey={dataKey} background isAnimationActive={false}
                 label={config.showLabel ? { position: "insideStart" as const, fill: "#fff", fontSize: 12 } : undefined} />
               {showTooltip && <Tooltip />}
               {showLegend && <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" />}

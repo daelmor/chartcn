@@ -22,6 +22,7 @@ export function RadialChartComponent({ config, width, height, theme }: Props) {
   const innerRad = config.innerRadius ?? 30;
   const startAngle = config.startAngle ?? 180;
   const endAngle = config.endAngle ?? 0;
+  const isHalfCircle = startAngle === 180 && endAngle === 0;
 
   // Assign colors to data entries if not specified
   const data = config.data.map((d, i) => ({
@@ -36,7 +37,7 @@ export function RadialChartComponent({ config, width, height, theme }: Props) {
         width={chartWidth}
         height={chartHeight}
         cx="50%"
-        cy="50%"
+        cy={isHalfCircle ? "60%" : "50%"}
         innerRadius={innerRad}
         outerRadius="80%"
         barSize={20}
@@ -49,7 +50,7 @@ export function RadialChartComponent({ config, width, height, theme }: Props) {
           label={config.showLabel ? { position: "insideStart", fill: "#fff", fontSize: 12 } : undefined}
         />
         {config.tooltip !== false && <Tooltip />}
-        {config.legend && <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" />}
+        {config.legend && <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" wrapperStyle={{ paddingTop: "0px" }} />}
       </RadialBarChart>
     </ChartWrapper>
   );

@@ -41,10 +41,32 @@ function generateData(count: number, keys: string[], xKey = "x") {
   });
 }
 
-// --- Test Charts ---
+// --- Dark variant helpers ---
 
-export const testCharts: TestChart[] = [
-  // ========== CHART TYPES (basic) ==========
+function darkVariant(chart: TestChart): TestChart {
+  return {
+    ...chart,
+    name: `${chart.name}-dark`,
+    description: `${chart.description} (dark theme)`,
+    config: {
+      ...chart.config,
+      theme: "dark",
+    },
+    expectations: {
+      ...chart.expectations,
+      theme: "dark",
+      features: [...(chart.expectations.features ?? []), "dark background", "light text"],
+    },
+  };
+}
+
+function withDarkVariants(charts: TestChart[]): TestChart[] {
+  return charts.flatMap(c => [c, darkVariant(c)]);
+}
+
+// --- Chart categories ---
+
+const chartTypes: TestChart[] = [
   {
     name: "line-basic",
     description: "Basic 2-series line chart with default settings",
@@ -223,8 +245,9 @@ export const testCharts: TestChart[] = [
       theme: "default",
     },
   },
+];
 
-  // ========== VARIANTS ==========
+const variants: TestChart[] = [
   {
     name: "line-curved",
     description: "Line chart with monotone interpolation (curved: true)",
@@ -427,98 +450,9 @@ export const testCharts: TestChart[] = [
       theme: "default",
     },
   },
+];
 
-  // ========== THEMES ==========
-  {
-    name: "line-dark",
-    description: "Line chart in dark theme",
-    config: {
-      type: "line",
-      width: 600,
-      height: 400,
-      theme: "dark",
-      config: {
-        title: "Dark Mode Line Chart",
-        xAxis: { key: "month" },
-        data: [
-          { month: "Jan", value: 100 },
-          { month: "Feb", value: 250 },
-          { month: "Mar", value: 180 },
-          { month: "Apr", value: 300 },
-        ],
-        series: [{ key: "value", label: "Metric" }],
-        legend: true,
-        grid: true,
-      },
-    },
-    expectations: {
-      seriesCount: 1,
-      dataPointCount: 4,
-      features: ["dark background", "light text", "dark grid"],
-      theme: "dark",
-    },
-  },
-  {
-    name: "bar-dark",
-    description: "Bar chart in dark theme",
-    config: {
-      type: "bar",
-      width: 600,
-      height: 400,
-      theme: "dark",
-      config: {
-        title: "Dark Mode Bar Chart",
-        xAxis: { key: "day" },
-        data: [
-          { day: "Mon", tasks: 12 },
-          { day: "Tue", tasks: 19 },
-          { day: "Wed", tasks: 8 },
-          { day: "Thu", tasks: 22 },
-          { day: "Fri", tasks: 15 },
-        ],
-        series: [{ key: "tasks", label: "Tasks" }],
-        legend: true,
-        grid: true,
-      },
-    },
-    expectations: {
-      seriesCount: 1,
-      dataPointCount: 5,
-      features: ["dark background", "light text"],
-      theme: "dark",
-    },
-  },
-  {
-    name: "area-dark",
-    description: "Area chart in dark theme with gradient",
-    config: {
-      type: "area",
-      width: 600,
-      height: 400,
-      theme: "dark",
-      config: {
-        title: "Dark Mode Area",
-        xAxis: { key: "month" },
-        data: [
-          { month: "Jan", value: 50 },
-          { month: "Feb", value: 80 },
-          { month: "Mar", value: 65 },
-          { month: "Apr", value: 95 },
-        ],
-        series: [{ key: "value", label: "Sessions", fill: true }],
-        curved: true,
-        grid: true,
-      },
-    },
-    expectations: {
-      seriesCount: 1,
-      dataPointCount: 4,
-      features: ["dark background", "gradient fill", "curved"],
-      theme: "dark",
-    },
-  },
-
-  // ========== MULTI-SERIES ==========
+const multiSeries: TestChart[] = [
   {
     name: "series-single",
     description: "Single series — no legend needed",
@@ -580,8 +514,9 @@ export const testCharts: TestChart[] = [
       theme: "default",
     },
   },
+];
 
-  // ========== FEATURE TOGGLES ==========
+const featureToggles: TestChart[] = [
   {
     name: "feature-legend",
     description: "Chart with legend, title, and description all present",
@@ -722,8 +657,9 @@ export const testCharts: TestChart[] = [
       theme: "default",
     },
   },
+];
 
-  // ========== EDGE CASES ==========
+const edgeCases: TestChart[] = [
   {
     name: "edge-single-point",
     description: "Only 1 data point — chart should still render",
@@ -960,4 +896,14 @@ export const testCharts: TestChart[] = [
       notes: "Should render without crashing — may show a dot or nothing visible",
     },
   },
+];
+
+// --- Compose all test charts (29 light + 29 dark = 58 total) ---
+
+export const testCharts: TestChart[] = [
+  ...withDarkVariants(chartTypes),
+  ...withDarkVariants(variants),
+  ...withDarkVariants(multiSeries),
+  ...withDarkVariants(featureToggles),
+  ...withDarkVariants(edgeCases),
 ];

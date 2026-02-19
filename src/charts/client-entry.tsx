@@ -201,14 +201,14 @@ function RenderChart() {
           return (
             <PieChart width={chartWidth} height={chartHeight}>
               <Pie data={data} dataKey={dataKey} nameKey={nameKey}
-                cx="50%" cy="50%" outerRadius={outerRadius} innerRadius={innerRad}
+                cx="50%" cy="45%" outerRadius={outerRadius} innerRadius={innerRad}
                 label={showLabels ? ({ name, percent }: { name: string; percent: number }) =>
                   `${name} ${(percent * 100).toFixed(0)}%` : undefined}
                 labelLine={showLabels} isAnimationActive={false}>
                 {data.map((_, i) => <Cell key={i} fill={colors[i]} />)}
               </Pie>
               {showTooltip && <Tooltip />}
-              {showLegend && <Legend />}
+              {showLegend && <Legend wrapperStyle={{ paddingTop: "8px" }} />}
             </PieChart>
           );
         })()}
@@ -236,18 +236,19 @@ function RenderChart() {
           const innerRad = (config.innerRadius as number) ?? 30;
           const startAngle = (config.startAngle as number) ?? 180;
           const endAngle = (config.endAngle as number) ?? 0;
+          const isHalfCircle = startAngle === 180 && endAngle === 0;
           const coloredData = data.map((d, i) => ({
             ...d,
             fill: (d.color as string) ?? resolveColor(i, undefined, theme),
           }));
           return (
             <RadialBarChart data={coloredData} width={chartWidth} height={chartHeight}
-              cx="50%" cy="50%" innerRadius={innerRad} outerRadius="80%"
+              cx="50%" cy={isHalfCircle ? "60%" : "50%"} innerRadius={innerRad} outerRadius="80%"
               barSize={20} startAngle={startAngle} endAngle={endAngle}>
               <RadialBar dataKey={dataKey} background isAnimationActive={false}
                 label={config.showLabel ? { position: "insideStart" as const, fill: "#fff", fontSize: 12 } : undefined} />
               {showTooltip && <Tooltip />}
-              {showLegend && <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" />}
+              {showLegend && <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" wrapperStyle={{ paddingTop: "0px" }} />}
             </RadialBarChart>
           );
         })()}

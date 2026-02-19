@@ -1,0 +1,19 @@
+services:
+  chartcn:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - CACHE_MAX_SIZE=500
+      - CACHE_TTL_SECONDS=3600
+      - MAX_CONCURRENT_RENDERS=10
+      - RENDER_TIMEOUT_MS=10000
+      - LOG_LEVEL=info
+      - RATE_LIMIT_RPM=60
+    restart: unless-stopped
+    # Chromium needs extra capabilities in containers
+    security_opt:
+      - seccomp:unconfined
+    shm_size: "1gb"

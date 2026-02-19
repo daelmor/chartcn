@@ -1,0 +1,16 @@
+{
+  "type": "radial",
+  "width": 500,
+  "height": 400,
+  "format": "png",
+  "config": {
+    "title": "Progress",
+    "data": [
+      { "name": "Chrome", "value": 275, "color": "hsl(221.2, 83.2%, 53.3%)" },
+      { "name": "Safari", "value": 200, "color": "hsl(142.1, 76.2%, 36.3%)" },
+      { "name": "Firefox", "value": 187, "color": "hsl(346.8, 77.2%, 49.8%)" }
+    ],
+    "legend": true,
+    "showLabel": true
+  }
+}

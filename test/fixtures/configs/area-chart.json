@@ -1,0 +1,21 @@
+{
+  "type": "area",
+  "width": 600,
+  "height": 400,
+  "format": "png",
+  "config": {
+    "title": "Area Chart",
+    "xAxis": { "key": "month" },
+    "data": [
+      { "month": "Jan", "desktop": 186, "mobile": 80 },
+      { "month": "Feb", "desktop": 305, "mobile": 200 },
+      { "month": "Mar", "desktop": 237, "mobile": 120 }
+    ],
+    "series": [
+      { "key": "desktop", "label": "Desktop", "fill": true },
+      { "key": "mobile", "label": "Mobile", "fill": true }
+    ],
+    "legend": true,
+    "curved": true
+  }
+}

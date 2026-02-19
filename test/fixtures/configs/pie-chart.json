@@ -1,0 +1,17 @@
+{
+  "type": "pie",
+  "width": 500,
+  "height": 400,
+  "format": "png",
+  "config": {
+    "title": "Browser Share",
+    "data": [
+      { "name": "Chrome", "value": 65 },
+      { "name": "Firefox", "value": 20 },
+      { "name": "Safari", "value": 15 }
+    ],
+    "donut": true,
+    "labels": true,
+    "legend": true
+  }
+}

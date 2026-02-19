@@ -1,0 +1,25 @@
+{
+  "type": "bar",
+  "width": 600,
+  "height": 400,
+  "format": "png",
+  "theme": "default",
+  "config": {
+    "title": "Monthly Revenue",
+    "description": "Q1 2025",
+    "xAxis": { "key": "month" },
+    "yAxis": { "label": "Revenue ($)" },
+    "data": [
+      { "month": "Jan", "revenue": 186, "profit": 80 },
+      { "month": "Feb", "revenue": 305, "profit": 200 },
+      { "month": "Mar", "revenue": 237, "profit": 120 }
+    ],
+    "series": [
+      { "key": "revenue", "label": "Revenue", "color": "#2563eb" },
+      { "key": "profit", "label": "Profit", "color": "#e11d48" }
+    ],
+    "legend": true,
+    "grid": true,
+    "stacked": false
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "line",
+  "width": 600,
+  "height": 400,
+  "format": "png",
+  "config": {
+    "title": "Trends",
+    "xAxis": { "key": "month" },
+    "data": [
+      { "month": "Jan", "desktop": 186, "mobile": 80 },
+      { "month": "Feb", "desktop": 305, "mobile": 200 },
+      { "month": "Mar", "desktop": 237, "mobile": 120 },
+      { "month": "Apr", "desktop": 203, "mobile": 190 }
+    ],
+    "series": [
+      { "key": "desktop", "label": "Desktop" },
+      { "key": "mobile", "label": "Mobile" }
+    ],
+    "legend": true,
+    "curved": true
+  }
+}

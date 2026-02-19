@@ -1,0 +1,22 @@
+{
+  "type": "radar",
+  "width": 500,
+  "height": 400,
+  "format": "png",
+  "config": {
+    "title": "Skills",
+    "xAxis": { "key": "subject" },
+    "data": [
+      { "subject": "Math", "A": 120, "B": 110 },
+      { "subject": "English", "A": 98, "B": 130 },
+      { "subject": "Science", "A": 86, "B": 130 },
+      { "subject": "Art", "A": 99, "B": 100 },
+      { "subject": "History", "A": 85, "B": 90 }
+    ],
+    "series": [
+      { "key": "A", "label": "Student A" },
+      { "key": "B", "label": "Student B" }
+    ],
+    "legend": true
+  }
+}

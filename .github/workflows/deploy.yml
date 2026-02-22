@@ -120,6 +120,7 @@ jobs:
           resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
           imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ needs.build-and-push.outputs.image_tag }}
           targetPort: 3000
+          environmentVariables: "AZURE_STORAGE_ACCOUNT_NAME=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}"
 
       - name: Get deployment URL
         run: |

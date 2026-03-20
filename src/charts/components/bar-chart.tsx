@@ -52,6 +52,10 @@ export function BarChartComponent({ config, width, height, theme }: Props) {
               dataKey={xKey}
               hide={config.xAxis?.hide}
               label={config.xAxis?.label ? { value: config.xAxis.label, position: "insideBottom", offset: -5 } : undefined}
+              angle={config.xAxis?.angle}
+              tickMargin={config.xAxis?.angle ? 5 : undefined}
+              tick={config.xAxis?.angle ? { textAnchor: config.xAxis.angle < 0 ? "end" : "start", fontSize: 11 } : undefined}
+              height={config.xAxis?.angle ? 80 : undefined}
             />
             <YAxis
               hide={config.yAxis?.hide}

@@ -38,6 +38,7 @@ const axisSchema = z.object({
   key: z.string().optional(),
   label: z.string().optional(),
   hide: z.boolean().optional(),
+  angle: z.number().min(-90).max(90).optional(),
 });
 
 const chartConfigSchema = z.object({

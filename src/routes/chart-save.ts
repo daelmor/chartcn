@@ -40,11 +40,14 @@ export const chartSaveRoute: FastifyPluginAsync<SaveRouteOptions> = async (
       createdAt: now,
     });
 
-    // Fire-and-forget write to blob storage
+    // Await blob write so the config is persisted before we respond.
+    // Fire-and-forget was losing data during container restarts/deploys.
     if (blobStore) {
-      blobStore.saveConfig(id, parsed.data).catch((err) => {
+      try {
+        await blobStore.saveConfig(id, parsed.data);
+      } catch (err) {
         fastify.log.error({ err, chartId: id }, "Failed to persist config to blob storage");
-      });
+      }
     }
 
     const expiresAt = blobStore

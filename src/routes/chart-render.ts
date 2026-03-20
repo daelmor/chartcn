@@ -92,7 +92,7 @@ export const chartRenderRoute: FastifyPluginAsync<RenderRouteOptions> = async (
     const result = await renderChart(chartRequest);
     imageCache.set(cacheKey, result);
 
-    // Fire-and-forget write to blob storage
+    // Persist image to blob storage (non-blocking — image can be re-rendered from config)
     if (blobStore) {
       blobStore.saveImage(chartId, imgKey, result.data, result.contentType).catch((err) => {
         fastify.log.error({ err, chartId }, "Failed to persist image to blob storage");

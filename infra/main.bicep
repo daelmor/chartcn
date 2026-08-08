@@ -6,8 +6,12 @@
 //   2. Log Analytics Workspace
 //   3. Container Apps Environment
 //   4. Container App (chartcn) with system-assigned managed identity
-//   5. Storage Account with blob containers (configs, images)
-//   6. RBAC: Storage Blob Data Contributor for the Container App
+//
+// Chart persistence uses a Google Cloud Storage bucket (provisioned
+// separately in GCP) rather than Azure Storage — pass its name via
+// the `gcsBucket` param, which becomes the GCS_BUCKET env var. The
+// container authenticates via a service account key mounted as a
+// secret (GOOGLE_APPLICATION_CREDENTIALS), managed outside this file.
 // ──────────────────────────────────────────────────────────────
 
 @description('Azure region for all resources')
@@ -49,6 +53,9 @@ param rateLimitRpm int = 60
 @description('Log level')
 param logLevel string = 'info'
 
+@description('Google Cloud Storage bucket name for persistent chart storage (optional)')
+param gcsBucket string = ''
+
 // ──────────────────────────────────────────────────────────────
 // Naming
 // ──────────────────────────────────────────────────────────────
@@ -58,7 +65,6 @@ var acrName = replace('${appName}acr${uniqueSuffix}', '-', '')
 var logAnalyticsName = '${appName}-logs-${uniqueSuffix}'
 var envName = '${appName}-env-${uniqueSuffix}'
 var containerAppName = appName
-var storageAccountName = replace('${appName}st${uniqueSuffix}', '-', '')
 
 // ──────────────────────────────────────────────────────────────
 // Azure Container Registry
@@ -106,39 +112,6 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
       }
     }
   }
-}
-
-// ──────────────────────────────────────────────────────────────
-// Storage Account + Blob Containers
-// ──────────────────────────────────────────────────────────────
-
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
-  name: substring(storageAccountName, 0, min(length(storageAccountName), 24))
-  location: location
-  kind: 'StorageV2'
-  sku: {
-    name: 'Standard_LRS'
-  }
-  properties: {
-    accessTier: 'Hot'
-    allowBlobPublicAccess: false
-    minimumTlsVersion: 'TLS1_2'
-  }
-}
-
-resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
-  parent: storageAccount
-  name: 'default'
-}
-
-resource configsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
-  parent: blobService
-  name: 'configs'
-}
-
-resource imagesContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
-  parent: blobService
-  name: 'images'
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -192,7 +165,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
             { name: 'CACHE_TTL_SECONDS', value: string(cacheTtlSeconds) }
             { name: 'RENDER_TIMEOUT_MS', value: string(renderTimeoutMs) }
             { name: 'RATE_LIMIT_RPM', value: string(rateLimitRpm) }
-            { name: 'AZURE_STORAGE_ACCOUNT_NAME', value: storageAccount.name }
+            { name: 'GCS_BUCKET', value: gcsBucket }
           ]
         }
       ]
@@ -215,23 +188,6 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
 }
 
 // ──────────────────────────────────────────────────────────────
-// RBAC: Storage Blob Data Contributor for the Container App
-// ──────────────────────────────────────────────────────────────
-
-// Storage Blob Data Contributor role ID
-var storageBlobDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
-
-resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, containerApp.id, storageBlobDataContributorRoleId)
-  scope: storageAccount
-  properties: {
-    principalId: containerApp.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
-  }
-}
-
-// ──────────────────────────────────────────────────────────────
 // Outputs
 // ──────────────────────────────────────────────────────────────
 
@@ -241,4 +197,3 @@ output containerAppFqdn string = containerApp.properties.configuration.ingress.f
 output containerAppUrl string = 'https://${containerApp.properties.configuration.ingress.fqdn}'
 output containerAppsEnvName string = containerAppsEnv.name
 output containerAppName string = containerApp.name
-output storageAccountName string = storageAccount.name

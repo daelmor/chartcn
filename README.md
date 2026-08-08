@@ -305,8 +305,7 @@ Set `"theme": "dark"` for dark mode variants.
 | `LOG_LEVEL` | `info` | Pino log level |
 | `RATE_LIMIT_RPM` | `60` | Requests per minute (0 = disabled) |
 | `CHROMIUM_PATH` | auto-detect | Path to Chromium binary |
-| `AZURE_STORAGE_ACCOUNT_NAME` | — | Azure Blob Storage account (enables persistent chart storage) |
-| `AZURE_STORAGE_CONNECTION_STRING` | — | Azure Blob Storage connection string (alternative to managed identity) |
+| `GCS_BUCKET` | — | Google Cloud Storage bucket (enables persistent chart storage) |
 
 ## Architecture
 
@@ -321,7 +320,7 @@ HTTP Request → Zod Validation → Cache Check → Build HTML Template
 - **PNG**: Direct Puppeteer screenshot at 2x device scale for crisp output
 - **SVG**: Extracted from the Recharts DOM element
 - **PDF**: Puppeteer PDF generation with background printing
-- **Caching**: Two-tier — in-memory LRU (L1) + Azure Blob Storage (L2, optional) keyed by config hash
+- **Caching**: Two-tier — in-memory LRU (L1) + Google Cloud Storage (L2, optional) keyed by config hash
 - **Client bundle**: React + Recharts pre-bundled with esbuild, loaded once per Puppeteer page
 
 ## Docker

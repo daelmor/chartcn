@@ -3,7 +3,7 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import type { AppConfig } from "./config.js";
 import { createImageCache, createConfigStore } from "./cache/lru-cache.js";
-import { AzureBlobStore, type BlobStore } from "./storage/blob-store.js";
+import { GcsBlobStore, type BlobStore } from "./storage/blob-store.js";
 import { healthRoute } from "./routes/health.js";
 import { chartRoute } from "./routes/chart.js";
 import { chartSaveRoute } from "./routes/chart-save.js";
@@ -38,15 +38,12 @@ export async function buildApp(config: AppConfig) {
   // Conditionally create blob store
   let blobStore: BlobStore | undefined;
   if (config.storageEnabled) {
-    const store = new AzureBlobStore(
-      config.AZURE_STORAGE_ACCOUNT_NAME,
-      config.AZURE_STORAGE_CONNECTION_STRING
-    );
+    const store = new GcsBlobStore(config.GCS_BUCKET!);
     await store.init();
     blobStore = store;
-    app.log.info("Azure Blob Storage enabled");
+    app.log.info("Google Cloud Storage enabled");
   } else {
-    app.log.info("Azure Blob Storage not configured — using memory-only storage");
+    app.log.info("Google Cloud Storage not configured — using memory-only storage");
   }
 
   // Initialize renderer

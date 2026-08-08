@@ -1,9 +1,5 @@
 import { createHash } from "node:crypto";
-import {
-  BlobServiceClient,
-  ContainerClient,
-} from "@azure/storage-blob";
-import { DefaultAzureCredential } from "@azure/identity";
+import { Storage, type Bucket } from "@google-cloud/storage";
 import type { ChartRequest } from "../schemas/chart-config.js";
 
 export interface BlobStore {
@@ -18,55 +14,38 @@ function blobPrefix(chartId: string): string {
   return hash.slice(0, 2);
 }
 
-export class AzureBlobStore implements BlobStore {
-  private configsContainer: ContainerClient;
-  private imagesContainer: ContainerClient;
+export class GcsBlobStore implements BlobStore {
+  private bucket: Bucket;
 
-  constructor(accountName?: string, connectionString?: string) {
-    let client: BlobServiceClient;
-
-    if (connectionString) {
-      client = BlobServiceClient.fromConnectionString(connectionString);
-    } else if (accountName) {
-      const credential = new DefaultAzureCredential();
-      client = new BlobServiceClient(
-        `https://${accountName}.blob.core.windows.net`,
-        credential
-      );
-    } else {
-      throw new Error(
-        "AzureBlobStore requires AZURE_STORAGE_ACCOUNT_NAME or AZURE_STORAGE_CONNECTION_STRING"
-      );
+  constructor(bucketName: string) {
+    if (!bucketName) {
+      throw new Error("GcsBlobStore requires GCS_BUCKET");
     }
 
-    this.configsContainer = client.getContainerClient("configs");
-    this.imagesContainer = client.getContainerClient("images");
+    const client = new Storage();
+    this.bucket = client.bucket(bucketName);
   }
 
   async init(): Promise<void> {
-    await this.configsContainer.createIfNotExists();
-    await this.imagesContainer.createIfNotExists();
+    // GCS buckets are pre-created by infra — nothing to provision here.
   }
 
   async saveConfig(chartId: string, config: ChartRequest): Promise<void> {
     const prefix = blobPrefix(chartId);
-    const blobPath = `${prefix}/${chartId}/config.json`;
-    const blob = this.configsContainer.getBlockBlobClient(blobPath);
+    const objectPath = `configs/${prefix}/${chartId}/config.json`;
     const body = JSON.stringify(config);
-    await blob.upload(body, Buffer.byteLength(body), {
-      blobHTTPHeaders: { blobContentType: "application/json" },
+    await this.bucket.file(objectPath).save(body, {
+      contentType: "application/json",
     });
   }
 
   async getConfig(chartId: string): Promise<ChartRequest | null> {
     const prefix = blobPrefix(chartId);
-    const blobPath = `${prefix}/${chartId}/config.json`;
-    const blob = this.configsContainer.getBlockBlobClient(blobPath);
+    const objectPath = `configs/${prefix}/${chartId}/config.json`;
 
     try {
-      const response = await blob.download(0);
-      const body = await streamToBuffer(response.readableStreamBody!);
-      return JSON.parse(body.toString()) as ChartRequest;
+      const [data] = await this.bucket.file(objectPath).download();
+      return JSON.parse(data.toString()) as ChartRequest;
     } catch (err: unknown) {
       if (isNotFoundError(err)) return null;
       throw err;
@@ -80,11 +59,8 @@ export class AzureBlobStore implements BlobStore {
     contentType: string
   ): Promise<void> {
     const prefix = blobPrefix(chartId);
-    const blobPath = `${prefix}/${chartId}/${key}`;
-    const blob = this.imagesContainer.getBlockBlobClient(blobPath);
-    await blob.upload(data, data.length, {
-      blobHTTPHeaders: { blobContentType: contentType },
-    });
+    const objectPath = `images/${prefix}/${chartId}/${key}`;
+    await this.bucket.file(objectPath).save(data, { contentType });
   }
 
   async getImage(
@@ -92,13 +68,13 @@ export class AzureBlobStore implements BlobStore {
     key: string
   ): Promise<{ data: Buffer; contentType: string } | null> {
     const prefix = blobPrefix(chartId);
-    const blobPath = `${prefix}/${chartId}/${key}`;
-    const blob = this.imagesContainer.getBlockBlobClient(blobPath);
+    const objectPath = `images/${prefix}/${chartId}/${key}`;
+    const file = this.bucket.file(objectPath);
 
     try {
-      const response = await blob.download(0);
-      const data = await streamToBuffer(response.readableStreamBody!);
-      const contentType = response.contentType ?? "application/octet-stream";
+      const [data] = await file.download();
+      const [metadata] = await file.getMetadata();
+      const contentType = metadata.contentType ?? "application/octet-stream";
       return { data, contentType };
     } catch (err: unknown) {
       if (isNotFoundError(err)) return null;
@@ -111,17 +87,7 @@ function isNotFoundError(err: unknown): boolean {
   return (
     typeof err === "object" &&
     err !== null &&
-    "statusCode" in err &&
-    (err as { statusCode: number }).statusCode === 404
+    "code" in err &&
+    (err as { code: number }).code === 404
   );
-}
-
-async function streamToBuffer(
-  stream: NodeJS.ReadableStream
-): Promise<Buffer> {
-  const chunks: Buffer[] = [];
-  for await (const chunk of stream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as unknown as Uint8Array));
-  }
-  return Buffer.concat(chunks);
 }
